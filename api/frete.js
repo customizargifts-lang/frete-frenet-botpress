@@ -35,29 +35,36 @@ export default async function handler(req, res) {
 
     const services = response.data.ShippingSevicesArray || [];
 
-   const validServices = services.filter(
-  s =>
-    Number(s.ShippingPrice) > 0 &&
-    Number(s.DeliveryTime) > 0 &&
-    s.Carrier !== "Retirada na Loja"
-);
+    const allowed = services.filter(s => {
+      const priceOk = Number(s.ShippingPrice) > 0;
+      const timeOk = Number(s.DeliveryTime) > 0;
 
+      const isLoggi = s.Carrier === "Loggi";
+      const isJadlog = s.Carrier === "Jadlog";
+      const isSedex =
+        s.Carrier === "Correios" &&
+        s.ServiceDescription?.toUpperCase().includes("SEDEX");
+      const isPac =
+        s.Carrier === "Correios" &&
+        s.ServiceDescription?.toUpperCase().includes("PAC");
 
-    if (validServices.length === 0) {
+      return priceOk && timeOk && (isLoggi || isJadlog || isSedex || isPac);
+    });
+
+    if (allowed.length === 0) {
       return res.status(200).json({
-        message: "Nenhum frete disponível para os dados informados"
+        message: "Nenhuma opção de frete disponível"
       });
     }
 
-    const cheapest = validServices.reduce((prev, curr) =>
-      curr.ShippingPrice < prev.ShippingPrice ? curr : prev
-    );
+    const opcoes = allowed.map(s => ({
+      transportadora: s.Carrier,
+      servico: s.ServiceDescription,
+      valor: Number(s.ShippingPrice),
+      prazo: Number(s.DeliveryTime)
+    }));
 
-    return res.status(200).json({
-      transportadora: cheapest.Carrier,
-      valor_frete: cheapest.ShippingPrice,
-      prazo_frete: cheapest.DeliveryTime
-    });
+    return res.status(200).json({ opcoes });
   } catch (error) {
     console.error(error.response?.data || error.message);
     return res.status(500).json({ error: "Erro ao calcular frete" });

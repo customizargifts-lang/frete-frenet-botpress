@@ -1,0 +1,7 @@
+{
+  "name": "frete-frenet-botpress",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

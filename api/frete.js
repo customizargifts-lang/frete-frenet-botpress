@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { cep, peso } = req.body;
+    const { cep, peso, length, width, height } = req.body;
 
     const response = await axios.post(
       "https://api.frenet.com.br/shipping/quote",
@@ -16,14 +16,15 @@ export default async function handler(req, res) {
         ShipmentInvoiceValue: 100,
         ShippingServiceCode: null,
         ShippingItemArray: [
-          {
-            Height: 2,
-            Length: 16,
-            Width: 11,
-            Weight: peso,
-            Quantity: 1
-          }
-        ]
+  {
+    Height: Number(height),
+    Length: Number(length),
+    Width: Number(width),
+    Weight: Number(peso),
+    Quantity: 1
+  }
+]
+
       },
       {
         headers: {

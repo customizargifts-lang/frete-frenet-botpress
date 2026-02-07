@@ -35,9 +35,13 @@ export default async function handler(req, res) {
 
     const services = response.data.ShippingSevicesArray || [];
 
-    const validServices = services.filter(
-      s => s.ShippingPrice && s.DeliveryTime
-    );
+   const validServices = services.filter(
+  s =>
+    Number(s.ShippingPrice) > 0 &&
+    Number(s.DeliveryTime) > 0 &&
+    s.Carrier !== "Retirada na Loja"
+);
+
 
     if (validServices.length === 0) {
       return res.status(200).json({
